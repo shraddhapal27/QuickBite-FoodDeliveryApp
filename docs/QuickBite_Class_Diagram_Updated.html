@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>QuickBite — Food Delivery Platform Documentation</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    --brand: #10b981; /* Emerald Green */
+    --brand-dark: #047857;
+    --brand-light: #ecfdf5;
+    --gold: #f59e0b;
+    --bg: #f3f4f6;
+    --card: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --sidebar-w: 300px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { 
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif; 
+    background: var(--bg);
+    color: var(--text); 
+    display: flex; 
+    min-height: 100vh; 
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: var(--sidebar-w); min-width: var(--sidebar-w);
+    background: #ffffff; color: #374151;
+    position: fixed; top: 0; left: 0; height: 100vh;
+    overflow-y: auto; z-index: 100;
+    display: flex; flex-direction: column;
+    border-right: 1px solid var(--border);
+    box-shadow: 2px 0 12px rgba(0,0,0,0.02);
+    padding-top: 16px;
+  }
+  .sidebar-brand {
+    padding: 16px 28px 24px;
+    font-size: 1.5rem; font-weight: 800;
+    color: var(--brand-dark); border-bottom: 1px solid var(--border);
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+  }
+  .sidebar-brand span { color: var(--brand); }
+  .sidebar-section { padding: 24px 28px 10px;
+    font-size: .8rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--muted); }
+  .sidebar a {
+    display: flex; align-items: center;
+    padding: 12px 20px; margin: 6px 20px;
+    color: #4b5563; text-decoration: none; font-size: .95rem; font-weight: 600;
+    border-radius: 12px;
+    transition: all .2s ease;
+    border: 1px solid transparent;
+  }
+  .sidebar a:hover {
+    background: #f9fafb; color: var(--brand-dark);
+    border-color: var(--border);
+    transform: translateX(4px);
+  }
+  .sidebar a.active {
+    background: var(--brand-light); color: var(--brand-dark);
+    border-color: #a7f3d0;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+  }
+  .sidebar a .icon { margin-right: 12px; opacity: 0.9; font-size: 1.1rem; }
+
+  /* ── Main content ── */
+  .main { margin-left: var(--sidebar-w); flex: 1; padding: 0; }
+
+  /* ── Top header ── */
+  .page-header {
+    background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%);
+    color: #fff; padding: 60px 50px;
+    border-bottom-left-radius: 32px;
+    border-bottom-right-radius: 32px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-md);
+  }
+  .page-header h1 { font-size: 2.8rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; }
+  .page-header p { opacity: 0.9; font-size: 1.1rem; font-weight: 500; }
+  .badge-row { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+  .badge {
+    background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.4);
+    padding: 6px 16px; border-radius: 24px; font-size: .8rem; font-weight: 700;
+    backdrop-filter: blur(4px);
+  }
+
+  /* ── Content sections ── */
+  .content { padding: 40px 50px 80px; max-width: 1200px; margin: 0 auto; }
+  .section { margin-bottom: 70px; scroll-margin-top: 80px; }
+  .section-title {
+    font-size: 1.8rem; font-weight: 800;
+    color: var(--text); 
+    padding-bottom: 16px; margin-bottom: 30px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .section-title .num {
+    background: var(--brand-light); color: var(--brand);
+    width: 40px; height: 40px; border-radius: 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 1rem; font-weight: 800; flex-shrink: 0;
+  }
+  .subsection { margin-bottom: 40px; }
+  .subsection h3 {
+    font-size: 1.2rem; font-weight: 700;
+    color: var(--brand-dark); margin-bottom: 16px;
+    padding-left: 14px; border-left: 4px solid var(--brand);
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--card); border-radius: 16px;
+    box-shadow: var(--shadow-md);
+    padding: 32px; margin-bottom: 24px;
+    border: 1px solid rgba(0,0,0,0.02);
+  }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 20px; }
+  .info-card {
+    background: var(--card); border-radius: 14px;
+    border: 1px solid var(--border); padding: 24px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s;
+  }
+  .info-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+  .info-card .label { font-size: .8rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 1px;
+    color: var(--brand); margin-bottom: 8px; }
+  .info-card .value { font-size: 1.15rem; font-weight: 700; color: var(--text); }
+  .info-card .desc { font-size: .9rem; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+
+  /* ── Tables ── */
+  .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  th { background: #f8f9fa; color: var(--text); padding: 16px 20px;
+       text-align: left; font-weight: 700; border-bottom: 2px solid var(--border); }
+  td { padding: 14px 20px; border-bottom: 1px solid var(--border); vertical-align: top; color: #495057; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover { background: #fcfcfc; }
+  td code { background: var(--brand-light); padding: 4px 8px; border-radius: 6px;
+             font-family: 'Consolas', monospace; font-size: .85rem; color: var(--brand-dark); font-weight: 600; }
+
+  /* ── Mermaid diagrams ── */
+  .diagram-box {
+    background: #ffffff; border: 1px solid var(--border);
+    border-radius: 16px; padding: 32px;
+    overflow-x: auto; margin-bottom: 24px;
+    box-shadow: var(--shadow-md);
+  }
+  .diagram-box .diagram-title {
+    font-size: .9rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--muted); margin-bottom: 24px;
+    text-align: center;
+  }
+  .mermaid { font-family: 'Plus Jakarta Sans', sans-serif; display: flex; justify-content: center; }
+
+  /* ── Tech pills ── */
+  .tech-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .tech-pill {
+    background: #f3f4f6; border: 1px solid #e5e7eb;
+    padding: 5px 12px; border-radius: 20px;
+    font-size: .82rem; color: #374151; font-weight: 500;
+  }
+  .tech-pill.teal   { background: #ccfbf1; border-color: #5eead4; color: #0f766e; }
+  .tech-pill.blue   { background: #dbeafe; border-color: #93c5fd; color: #1d4ed8; }
+  .tech-pill.green  { background: #dcfce7; border-color: #86efac; color: #166534; }
+  .tech-pill.purple { background: #ede9fe; border-color: #c4b5fd; color: #6d28d9; }
+  .tech-pill.amber  { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+  .tech-pill.red    { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+  .tech-pill.orange { background: #ffedd5; border-color: #fdba74; color: #9a3412; }
+  .port { display: inline-block; background: var(--brand-light);
+    color: var(--brand); padding: 2px 8px; border-radius: 4px;
+    font-size: .78rem; font-weight: 700; font-family: monospace; }
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ────────────────────────────────────────────────────────────── -->
+<nav class="sidebar">
+  <div class="sidebar-brand">🍔 <span>QuickBite</span><br/>
+    <small style="font-size:.72rem;opacity:.6;font-weight:400">Food Delivery — Project Documentation v1.0</small>
+  </div>
+
+  <div class="sidebar-section">Overview</div>
+  <a href="#synopsis" class="active"><span class="icon">📋</span>Project Synopsis</a>
+  <a href="#requirements"><span class="icon">📝</span>Detailed Requirements</a>
+  <a href="#tech-stack"><span class="icon">⚙️</span>Technology Stack</a>
+  <a href="#services"><span class="icon">🔧</span>Microservices Table</a>
+
+  <div class="sidebar-section">Diagrams</div>
+  <a href="#architecture"><span class="icon">🏗️</span>System Architecture</a>
+  <a href="#erd"><span class="icon">🗄️</span>Entity Relationship (ERD)</a>
+  <a href="#class-diagrams"><span class="icon">📐</span>Class Diagrams</a>
+  <a href="#sequence-diagrams"><span class="icon">🔄</span>Sequence Diagrams</a>
+  <a href="#usecase"><span class="icon">👤</span>Use Case Diagram</a>
+  <a href="#component"><span class="icon">🔩</span>Component Diagram</a>
+  <a href="#deployment"><span class="icon">🚀</span>Deployment Diagram</a>
+  <a href="#state"><span class="icon">📊</span>State Diagrams</a>
+
+  <div class="sidebar-section">Reference</div>
+  <a href="#api-endpoints"><span class="icon">🌐</span>API Endpoints</a>
+  <a href="#db-schemas"><span class="icon">💾</span>Database Schemas</a>
+  <a href="#nfr"><span class="icon">⚡</span>Non-Functional Req.</a>
+  <a href="#future"><span class="icon">🔮</span>Future Enhancements</a>
+</nav>
+
+<!-- ── MAIN ─────────────────────────────────────────────────────────────── -->
+<div class="main">
+
+<!-- Header -->
+<div class="page-header">
+  <h1>QuickBite — Food Delivery Platform</h1>
+  <p>Spring Boot Microservices · Angular UI · RabbitMQ · Redis · API Gateway</p>
+  <div class="badge-row">
+    <span class="badge">Java 17/21 · Spring Boot 3.x</span>
+    <span class="badge">Angular Frontend</span>
+    <span class="badge">8 Microservices</span>
+    <span class="badge">MySQL · Redis · RabbitMQ</span>
+    <span class="badge">JWT Security</span>
+    <span class="badge">Swagger OpenAPI</span>
+    <span class="badge">Razorpay Integration</span>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     1. PROJECT SYNOPSIS
+══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="synopsis">
+  <div class="section-title"><span class="num">1</span> Project Synopsis</div>
+
+  <div class="card">
+    <p style="font-size:1rem;line-height:1.8;color:#374151">
+      <strong>QuickBite</strong> is a comprehensive, microservices-based <strong>Food Delivery Platform</strong> built with
+      <strong>Spring Boot</strong> on the backend and <strong>Angular</strong> on the frontend.
+      The system allows customers to browse restaurants, add items to their cart, place orders, make payments securely via Razorpay, and track their delivery. It also features dedicated flows for Restaurant Owners to manage menus and Delivery Agents to complete handoffs.<br/><br/>
+      The architecture consists of <strong>independently scalable microservices</strong> interconnected via an <strong>API Gateway</strong>. Each service manages its own MySQL database to ensure loose coupling. Inter-service data retrieval is handled synchronously, while asynchronous operations like notifications and delivery assignments are decoupled using <strong>RabbitMQ</strong>. <strong>Redis</strong> is heavily utilized for high-performance caching (menus, restaurants) and managing JWT token blacklists. All APIs are fully documented using <strong>Swagger/OpenAPI 3.0</strong>.
+    </p>
+  </div>
+
+  <div class="card-grid">
+    <div class="info-card">
+      <div class="label">Architecture</div>
+      <div class="value">Microservices</div>
+      <div class="desc">8 dedicated domain services</div>
+    </div>
+    <div class="info-card">
+      <div class="label">User Roles</div>
+      <div class="value">3 Distinct Roles</div>
+      <div class="desc">Customer · Owner · Delivery Agent</div>
+    </div>
+    <div class="info-card">
+      <div class="label">Databases</div>
+      <div class="value">MySQL + Redis</div>
+      <div class="desc">Distributed data with caching layers</div>
+    </div>
+    <div class="info-card">
+      <div class="label">Messaging</div>
+      <div class="value">RabbitMQ</div>
+      <div class="desc">Event-driven order processing</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     2. DETAILED REQUIREMENTS
+══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="requirements">
+  <div class="section-title"><span class="num">2</span> Detailed Requirements</div>
+
+  <div class="subsection">
+    <h3>2.1 Authentication & Authorization</h3>
+    <div class="card">
+      <ul style="padding-left:20px;line-height:2;color:#374151;font-size:.93rem">
+        <li>User registration and login using JWT-based authentication.</li>
+        <li>Role-based access control (RBAC) supporting: CUSTOMER, OWNER, and DELIVERY_AGENT.</li>
+        <li>Token blacklisting mechanism implemented via Redis for secure logout.</li>
+        <li>Spring Security integration at the API Gateway to protect downstream routes.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3>2.2 Core Order Flow</h3>
+    <div class="card">
+      <ul style="padding-left:20px;line-height:2;color:#374151;font-size:.93rem">
+        <li>Customers can browse cached restaurant menus and add items to a Cart.</li>
+        <li>Cart data is aggregated and validated by the Order Service upon checkout.</li>
+        <li>Orders are placed with an initial "PENDING" status.</li>
+        <li>Payment Service integrates with Razorpay to capture funds and generate receipts.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3>2.3 Delivery & Fulfillment</h3>
+    <div class="card">
+      <ul style="padding-left:20px;line-height:2;color:#374151;font-size:.93rem">
+        <li>Restaurant Owners receive notifications to accept and prepare orders.</li>
+        <li>Delivery Agents are assigned orders based on availability.</li>
+        <li>Agents can update delivery status (e.g., OUT_FOR_DELIVERY, DELIVERED).</li>
+        <li>Asynchronous notifications dispatched to customers via RabbitMQ.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     3. TECHNOLOGY STACK
+══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="tech-stack">
+  <div class="section-title"><span class="num">3</span> Technology Stack</div>
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Layer</th><th>Technology</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>Backend Framework</td><td><strong>Java · Spring Boot 3.x</strong></td><td>Core application framework for all microservices</td></tr>
+          <tr><td>Frontend</td><td><strong>Angular</strong></td><td>Client application featuring dashboards for all 3 user roles</td></tr>
+          <tr><td>API Gateway</td><td>Spring Cloud Gateway</td><td>Single entry point, JWT enforcement, routing to downstream services</td></tr>
+          <tr><td>Service Registry</td><td>Netflix Eureka Server</td><td>Dynamic service discovery and registration</td></tr>
+          <tr><td>Security</td><td>Spring Security · JWT</td><td>Authentication, Role-Based Access Control, Token Blacklisting</td></tr>
+          <tr><td>Primary Database</td><td>MySQL</td><td>Relational data store; separate schema for each microservice domain</td></tr>
+          <tr><td>Caching</td><td>Redis</td><td>High-speed cache for Cart/Menu items and JWT Blacklist</td></tr>
+          <tr><td>Async Messaging</td><td>RabbitMQ</td><td>Publish/Subscribe event bus for "Order Placed" notifications</td></tr>
+          <tr><td>Payment Gateway</td><td>Razorpay</td><td>Handling mock and real payments, generating order receipts</td></tr>
+          <tr><td>API Documentation</td><td>SpringDoc OpenAPI 3.0</td><td>Swagger UI aggregated at the API Gateway</td></tr>
+          <tr><td>Testing</td><td>JUnit 5 · Mockito</td><td>Unit testing and service mocking</td></tr>
+          <tr><td>Logging</td><td>SLF4J / Logback</td><td>Standardized, rotating application logs</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="tech-grid">
+    <span class="tech-pill teal">Spring Boot 3.x</span>
+    <span class="tech-pill blue">Angular</span>
+    <span class="tech-pill teal">Spring Cloud Gateway</span>
+    <span class="tech-pill green">Netflix Eureka</span>
+    <span class="tech-pill blue">JWT Security</span>
+    <span class="tech-pill amber">MySQL</span>
+    <span class="tech-pill red">Redis</span>
+    <span class="tech-pill orange">RabbitMQ</span>
+    <span class="tech-pill amber">Razorpay</span>
+    <span class="tech-pill purple">Swagger / OpenAPI 3</span>
+    <span class="tech-pill green">JUnit 5</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     4. MICROSERVICES TABLE
+══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="services">
+  <div class="section-title"><span class="num">4</span> Microservices Reference</div>
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Service</th><th>Port</th><th>Database</th><th>Primary Responsibility</th></tr></thead>
+        <tbody>
+          <tr><td><strong>api-gateway</strong></td><td><span class="port">8080</span></td><td>—</td><td>Entry point, routes traffic, aggregates Swagger docs, enforces security rules.</td></tr>
+          <tr><td><strong>eureka-server</strong></td><td><span class="port">8761</span></td><td>—</td><td>Service discovery registry; microservices register here on startup.</td></tr>
+          <tr><td><strong>auth-service</strong></td><td><span class="port">8081</span></td><td>MySQL + Redis</td><td>User registration, login, JWT issuing, role management, and token blacklisting via Redis.</td></tr>
+          <tr><td><strong>restaurant-service</strong></td><td><span class="port">8082</span></td><td>MySQL + Redis</td><td>Manages restaurant profiles, locations, and cuisines. Cached for quick retrieval.</td></tr>
+          <tr><td><strong>menu-service</strong></td><td><span class="port">8083</span></td><td>MySQL + Redis</td><td>Handles menu items, pricing, availability. Linked to restaurant IDs. Cached in Redis.</td></tr>
+          <tr><td><strong>cart-service</strong></td><td><span class="port">8084</span></td><td>MySQL + Redis</td><td>Stores user cart state before checkout.</td></tr>
+          <tr><td><strong>order-service</strong></td><td><span class="port">8085</span></td><td>MySQL</td><td>Core transaction engine. Converts cart to order, calculates totals, publishes to RabbitMQ.</td></tr>
+          <tr><td><strong>payment-service</strong></td><td><span class="port">8086</span></td><td>MySQL</td><td>Integrates with Razorpay for payment processing and generates order receipts.</td></tr>
+          <tr><td><strong>delivery-service</strong></td><td><span class="port">8087</span></td><td>MySQL</td><td>Agent assignments, delivery tracking, and order completion workflows.</td></tr>
+          <tr><td><strong>notification-service</strong></td><td><span class="port">8089</span></td><td>MySQL</td><td>Consumes RabbitMQ events to generate alerts/emails for order state changes.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     5. SYSTEM ARCHITECTURE DIAGRAM
+══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="architecture">
+  <div class="section-title"><span class="num">5</span> System Architecture Diagram</div>
+
+  <div class="diagram-box">
+    <div class="diagram-title">🏗️ QuickBite — High-Level Component Flow</div>
+    <div class="mermaid">
+graph TD
+    subgraph Frontend
+        Angular["Angular UI (Port 4200)"]
+    end
+
+    subgraph Infrastructure
+        Gateway["API Gateway (Port 8080)"]
+        Eureka["Eureka Discovery (Port 8761)"]
+        RabbitMQ["RabbitMQ (Messaging)"]
+        Redis["Redis (Caching / Blacklist)"]
+    end
+
+    subgraph Microservices
+        Auth["Auth Service (8081)"]
+        Restaurant["Restaurant Service (8082)"]
+        Menu["Menu Service (8083)"]
+        Cart["Cart Service (8084)"]
+        Order["Order Service (8085)"]
+        Payment["Payment Service (8086)"]
+        Delivery["Delivery Service (8087)"]
+        Notification["Notification Service (8089)"]
+    end
+
+    Angular --> Gateway
+    Gateway --> Auth
+    Gateway --> Restaurant
+    Gateway --> Menu
+    Gateway --> Cart
+    Gateway --> Order
+    Gateway --> Payment
+    Gateway --> Delivery
+
+    Order -.->|Order Placed| RabbitMQ
+    RabbitMQ -.-> Notification
+    
+    Restaurant -- Caches --> Redis
+    Menu -- Caches --> Redis
+    Cart -- Caches --> Redis
+    Auth -- Token Blacklist --> Redis
+    
+    Auth -.-> Eureka
+    Order -.-> Eureka
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     6. ERD
+══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="erd">
+  <div class="section-title"><span class="num">6</span> Entity Relationship Diagram (ERD)</div>
+
+  <div class="diagram-box">
+    <div class="diagram-title">🗄️ QuickBite — Logical Database Schema</div>
+    <div class="mermaid">
+erDiagram
+    USER ||--o{ RESTAURANT : "owns (OWNER role)"
+    USER ||--o{ ORDER : "places (CUSTOMER role)"
+    USER ||--o{ WALLET : "has"
+    USER ||--o{ DELIVERY_AGENT : "is (AGENT role)"
+
+    RESTAURANT ||--o{ MENU_ITEM : "has"
+    RESTAURANT ||--o{ ORDER : "receives"
+
+    ORDER ||--|{ ORDER_ITEM : "contains"
+    MENU_ITEM ||--o{ ORDER_ITEM : "is in"
+
+    ORDER ||--|| DELIVERY : "has"
+    DELIVERY_AGENT ||--o{ DELIVERY : "assigned to"
+
+    USER {
+        long id PK
+        string email
+        string password
+        string role
+    }
+
+    RESTAURANT {
+        long id PK
+        string name
+        long owner_id FK
+        string city
+        string cuisine
+    }
+
+    MENU_ITEM {
+        long id PK
+        string name
+        double price
+        long restaurant_id FK
+    }
+
+    ORDER {
+        long id PK
+        long customer_id FK
+        long restaurant_id FK
+        double total_price
+        string status
+        datetime order_date
+    }
+
+    ORDER_ITEM {
+        long id PK
+        long order_id FK
+        long menu_item_id FK
+        int quantity
+    }
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     7. CLASS DIAGRAMS
+══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="class-diagrams">
+  <div class="section-title"><span class="num">7</span> Class Diagrams</div>
+
+  <div class="diagram-box">
+    <div class="diagram-title">📐 QuickBite — Domain Class Diagram</div>
+    <div class="mermaid">
+classDiagram
+    class User {
+        +Long id
+        +String email
+        +String password
+        +Role role
+    }
+
+    class Restaurant {
+        +Long id
+        +String name
+        +String city
+        +Long ownerId
+    }
+
+    class MenuItem {
+        +Long id
+        +String name
+        +Double price
+        +Long restaurantId
+    }
+
+    class Order {
+        +Long id
+        +Long customerId
+        +Long restaurantId
+        +Double totalPrice
+        +OrderStatus status
+        +LocalDateTime orderDate
+    }
+
+    class OrderItem {
+        +Long id
+        +Long orderId
+        +Long menuItemId
+        +Integer quantity
+    }
+
+    class Delivery {
+        +Long id
+        +Long orderId
+        +Long agentId
+        +DeliveryStatus status
+    }
+
+    class DeliveryAgent {
+        +Long id
+        +Long userId
+        +String vehicleNumber
+        +Boolean available
+    }
+
+    class Wallet {
+        +Long id
+        +Long userId
+        +Double balance
+    }
+
+    class Role {
+        &lt;&lt;enumeration&gt;&gt;
+        CUSTOMER
+        OWNER
+        ADMIN
+        AGENT
+    }
+
+    class OrderStatus {
+        &lt;&lt;enumeration&gt;&gt;
+        PENDING
+        CONFIRMED
+        PREPARING
+        OUT_FOR_DELIVERY
+        DELIVERED
+        CANCELLED
+    }
+
+    class DeliveryStatus {
+        &lt;&lt;enumeration&gt;&gt;
+        ASSIGNED
+        PICKED_UP
+        ON_THE_WAY
+        DELIVERED
+    }
+
+    User "1" --&gt; "0..*" Restaurant : owns
+    Restaurant "1" --&gt; "0..*" MenuItem : has
+    User "1" --&gt; "0..*" Order : places
+    Restaurant "1" --&gt; "0..*" Order : receives
+    Order "1" --&gt; "1..*" OrderItem : contains
+    MenuItem "1" --&gt; "0..*" OrderItem : included in
+    Order "1" --&gt; "1" Delivery : has
+    DeliveryAgent "1" --&gt; "0..*" Delivery : assigned to
+    User "1" --&gt; "1" Wallet : has
+    User --&gt; Role
+    Order --&gt; OrderStatus
+    Delivery --&gt; DeliveryStatus
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     8. SEQUENCE DIAGRAMS
+══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="sequence-diagrams">
+  <div class="section-title"><span class="num">8</span> Sequence Diagrams</div>
+
+  <div class="diagram-box">
+    <div class="diagram-title">🔄 QuickBite — Placing an Order</div>
+    <div class="mermaid">
+sequenceDiagram
+    participant C as Customer (Angular)
+    participant G as API Gateway
+    participant O as Order Service
+    participant CR as Cart Service
+    participant R as RabbitMQ
+    participant N as Notification Service
+
+    C->>G: POST /orders (Checkout)
+    G->>O: Forward Request
+    O->>G: GET /cart/{id}
+    G->>CR: Fetch Items
+    CR-->>O: Return Cart Data
+    O->>O: Calculate Total & Save Order (MySQL)
+    O->>G: DELETE /cart/{id}
+    G->>CR: Clear Cart
+    O->>R: Publish "Order Placed" Event
+    O-->>C: 201 Created (Success)
+    
+    Note over R,N: Asynchronous Process
+    R->>N: Consume Message
+    N->>N: Send Email/Push Notification
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     9. USE CASE DIAGRAM
+══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="usecase">
+  <div class="section-title"><span class="num">9</span> Use Case Diagram</div>
+
+  <div class="diagram-box">
+    <div class="diagram-title">👤 QuickBite — User Interactions</div>
+    <div class="mermaid">
+flowchart LR
+    Customer((Customer))
+    Owner((Owner))
+    Agent((Delivery Agent))
+
+    subgraph Platform [QuickBite Platform]
+        direction TB
+        UC1([Browse Restaurants])
+        UC2([Place Order])
+        UC3([Track Order])
+        UC4([Manage Menu])
+        UC5([Accept Order])
+        UC6([Accept Delivery])
+        UC7([Mark Delivered])
+    end
+
+    Customer --> UC1
+    Customer --> UC2
+    Customer --> UC3
+    Owner --> UC4
+    Owner --> UC5
+    Agent --> UC6
+    Agent --> UC7
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     10. COMPONENT DIAGRAM
+══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="component">
+  <div class="section-title"><span class="num">10</span> Component Diagram</div>
+
+  <div class="diagram-box">
+    <div class="diagram-title">🔩 QuickBite — Logical Components</div>
+    <div class="mermaid">
+flowchart TD
+    subgraph Frontend [Frontend Layer]
+        App[Angular App]
+    end
+    
+    subgraph APILayer [API Gateway Layer]
+        Gateway[Spring Cloud Gateway]
+    end
+    
+    subgraph Microservices [Core Microservices]
+        Auth[Auth Service]
+        Order[Order Service]
+        Restaurant[Restaurant Service]
+    end
+    
+    subgraph Data [Data Stores]
+        MySQL[(MySQL Databases)]
+        Redis[(Redis Cache)]
+    end
+
+    App -->|HTTPS| Gateway
+    Gateway --> Auth
+    Gateway --> Order
+    Gateway --> Restaurant
+    Order --> MySQL
+    Restaurant --> Redis
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     11. DEPLOYMENT DIAGRAM
+══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="deployment">
+  <div class="section-title"><span class="num">11</span> Deployment Diagram</div>
+
+  <div class="diagram-box">
+    <div class="diagram-title">🚀 QuickBite — Infrastructure Deployment</div>
+    <div class="mermaid">
+graph TD
+    subgraph "Docker Network"
+        GatewayNode[API Gateway Container]
+        ServiceNodes[Microservices Containers]
+        DBNode[MySQL Container]
+        CacheNode[Redis Container]
+        QueueNode[RabbitMQ Container]
+    end
+
+    Client[Browser / Client] -->|HTTPS| GatewayNode
+    GatewayNode --> ServiceNodes
+    ServiceNodes --> DBNode
+    ServiceNodes --> CacheNode
+    ServiceNodes --> QueueNode
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     12. STATE DIAGRAMS
+══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="state">
+  <div class="section-title"><span class="num">12</span> State Diagrams</div>
+
+  <div class="diagram-box">
+    <div class="diagram-title">📊 QuickBite — Order Lifecycle State Diagram</div>
+    <div class="mermaid">
+stateDiagram-v2
+    [*] --> PENDING : Customer Places Order
+    PENDING --> PREPARING : Owner Accepts
+    PREPARING --> READY_FOR_PICKUP : Food is Ready
+    READY_FOR_PICKUP --> OUT_FOR_DELIVERY : Agent Picks Up
+    OUT_FOR_DELIVERY --> DELIVERED : Handoff to Customer
+    PENDING --> CANCELLED : Customer/Owner Cancels
+    DELIVERED --> [*]
+    CANCELLED --> [*]
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     13. API ENDPOINTS
+══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="api-endpoints">
+  <div class="section-title"><span class="num">13</span> API Endpoints</div>
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Method</th><th>Endpoint</th><th>Service</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>POST</td><td><code>/api/auth/register</code></td><td>auth-service</td><td>Registers a new user (Customer/Owner/Agent).</td></tr>
+          <tr><td>POST</td><td><code>/api/auth/login</code></td><td>auth-service</td><td>Authenticates a user and returns a JWT token.</td></tr>
+          <tr><td>GET</td><td><code>/api/restaurants</code></td><td>restaurant-service</td><td>Retrieves all active restaurants (cached).</td></tr>
+          <tr><td>GET</td><td><code>/api/menus/restaurant/{id}</code></td><td>menu-service</td><td>Retrieves the menu for a specific restaurant.</td></tr>
+          <tr><td>POST</td><td><code>/api/cart/add</code></td><td>cart-service</td><td>Adds a menu item to the user's cart.</td></tr>
+          <tr><td>POST</td><td><code>/api/orders/place</code></td><td>order-service</td><td>Converts the active cart into an order.</td></tr>
+          <tr><td>POST</td><td><code>/api/payments/checkout</code></td><td>payment-service</td><td>Initiates a Razorpay payment flow.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     14. DATABASE SCHEMAS
+══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="db-schemas">
+  <div class="section-title"><span class="num">14</span> Database Schemas</div>
+  <div class="card">
+    <p style="font-size:1rem;line-height:1.8;color:#374151">
+      Following the Database-per-Service pattern, QuickBite ensures isolation.
+    </p>
+    <ul style="padding-left:20px;line-height:2;color:#374151;font-size:.93rem;margin-top:10px;">
+      <li><strong>quickbite_auth:</strong> Stores users, roles, and hashed passwords.</li>
+      <li><strong>quickbite_restaurant:</strong> Stores restaurant details, locations, and owner associations.</li>
+      <li><strong>quickbite_menu:</strong> Stores items, descriptions, and pricing.</li>
+      <li><strong>quickbite_order:</strong> Stores order headers, items, status, and total prices.</li>
+      <li><strong>quickbite_payment:</strong> Stores transaction IDs and Razorpay references.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     15. NON-FUNCTIONAL REQUIREMENTS
+══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="nfr">
+  <div class="section-title"><span class="num">15</span> Non-Functional Requirements</div>
+  <div class="card">
+    <ul style="padding-left:20px;line-height:2;color:#374151;font-size:.93rem">
+      <li><strong>Scalability:</strong> Services can scale independently based on load (e.g., scaling Order Service during peak hours).</li>
+      <li><strong>Security:</strong> All inter-service calls use internal networking. External calls require a valid JWT issued by Auth Service.</li>
+      <li><strong>Performance:</strong> Redis caching guarantees sub-100ms response times for browsing restaurants and menus.</li>
+      <li><strong>Resilience:</strong> Services use Netflix Eureka for dynamic IP resolution, preventing hardcoded dependency failures.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     16. FUTURE ENHANCEMENTS
+══════════════════════════════════════════════════════════════════════ -->
+<div class="section" id="future">
+  <div class="section-title"><span class="num">16</span> Future Enhancements</div>
+  <div class="card">
+    <ul style="padding-left:20px;line-height:2;color:#374151;font-size:.93rem">
+      <li><strong>Real-time Location Tracking:</strong> Integrate WebSockets/Google Maps API to track the delivery agent live.</li>
+      <li><strong>AI Recommendations:</strong> Suggest food items based on past order history.</li>
+      <li><strong>Push Notifications:</strong> Shift from standard in-app notifications to Firebase Cloud Messaging (FCM) for mobile devices.</li>
+      <li><strong>Promotions Engine:</strong> Build a dedicated microservice for complex coupon logic and discounts.</li>
+    </ul>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+    mermaid.initialize({ startOnLoad: true });
+</script>
+</body>
+</html>

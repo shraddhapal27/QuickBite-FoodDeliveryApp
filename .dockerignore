@@ -1,0 +1,13 @@
+**/target/
+**/.git
+**/.gitignore
+**/.mvn/
+**/bin/
+**/.settings/
+**/.classpath
+**/.project
+**/.factorypath
+**/node_modules/
+**/*.zip
+**/*.log
+**/HELP.md

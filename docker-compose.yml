@@ -1,0 +1,379 @@
+# ════════════════════════════════════════════════════════
+
+# ════════════════════════════════════════════════════════
+# QuickBite — Full-Stack Docker Compose
+# ════════════════════════════════════════════════════════
+
+services:
+
+  # ── MySQL Database ────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: quickbite-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-it.is.sql.123()}
+    ports:
+      - "3301:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init-databases.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-it.is.sql.123()}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - quickbite-net
+
+  # ── Redis Cache ──────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: quickbite-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - quickbite-net
+
+  # ── RabbitMQ Message Broker ────────────────────────────
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: quickbite-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - quickbite-net
+
+  # ── Service Registry (Eureka) ────────────────────────
+  service-registry:
+    build: ./service-registry
+    container_name: quickbite-eureka
+    restart: unless-stopped
+    ports:
+      - "8762:8761"
+    healthcheck:
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8761/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - quickbite-net
+
+  # ── API Gateway ──────────────────────────────────────
+  api-gateway:
+    build: ./api-gateway
+    container_name: quickbite-gateway
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka/
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    networks:
+      - quickbite-net
+
+  # ── Admin Server (Monitoring) ─────────────────────────
+  admin-server:
+    build: ./admin-server
+    container_name: quickbite-admin
+    restart: unless-stopped
+    ports:
+      - "9001:9001"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka/
+      SPRING_SECURITY_USER_PASSWORD: admin.password.123
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    networks:
+      - quickbite-net
+
+  # ── Auth Service ─────────────────────────────────────
+  auth-service:
+    build: ./auth-service
+    container_name: quickbite-auth
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/quickbite_auth?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-it.is.sql.123()}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka/
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+    depends_on:
+      mysql:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - quickbite-net
+
+  # ── Restaurant Service ───────────────────────────────
+  restaurant-service:
+    build: ./restaurant-service
+    container_name: quickbite-restaurant
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/quickbite_restaurant?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-it.is.sql.123()}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka/
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+    depends_on:
+      mysql:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - quickbite-net
+
+  # ── Menu Service ─────────────────────────────────────
+  menu-service:
+    build: ./menu-service
+    container_name: quickbite-menu
+    restart: unless-stopped
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/quickbite_menu?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-it.is.sql.123()}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka/
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+    depends_on:
+      mysql:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - quickbite-net
+
+  # ── Cart Service ─────────────────────────────────────
+  cart-service:
+    build: ./cart-service
+    container_name: quickbite-cart
+    restart: unless-stopped
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/quickbite_cart?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-it.is.sql.123()}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka/
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+    depends_on:
+      mysql:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - quickbite-net
+
+  # ── Order Service ────────────────────────────────────
+  order-service:
+    build: ./order-service
+    container_name: quickbite-order
+    restart: unless-stopped
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/quickbite_order?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka/
+      SPRING_RABBITMQ_HOST: rabbitmq
+    depends_on:
+      mysql:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - quickbite-net
+
+  # ── Payment Service ──────────────────────────────────
+  payment-service:
+    build: ./payment-service
+    container_name: quickbite-payment
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/quickbite_payment?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-it.is.sql.123()}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka/
+    depends_on:
+      mysql:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+    networks:
+      - quickbite-net
+
+  # ── Delivery Service ─────────────────────────────────
+  delivery-service:
+    build: ./delivery-service
+    container_name: quickbite-delivery
+    restart: unless-stopped
+    ports:
+      - "8087:8087"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/quickbite_delivery?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-it.is.sql.123()}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka/
+    depends_on:
+      mysql:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+    networks:
+      - quickbite-net
+
+  # ── Review Service ───────────────────────────────────
+  review-service:
+    build: ./review-service
+    container_name: quickbite-review
+    restart: unless-stopped
+    ports:
+      - "8088:8088"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/quickbite_review?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-it.is.sql.123()}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka/
+    depends_on:
+      mysql:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+    networks:
+      - quickbite-net
+
+  # ── Notification Service ─────────────────────────────
+  notification-service:
+    build: ./notification-service
+    container_name: quickbite-notification
+    restart: unless-stopped
+    ports:
+      - "8089:8089"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/quickbite_notification?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-it.is.sql.123()}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka/
+      SPRING_RABBITMQ_HOST: rabbitmq
+    depends_on:
+      mysql:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - quickbite-net
+
+  # ── Angular Frontend ─────────────────────────────────
+  quickbite-ui:
+    build: ../QuickBite-FoodDeliveryAppFrontend/quickbite-ui
+    container_name: quickbite-ui
+    restart: unless-stopped
+    ports:
+      - "4200:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - quickbite-net
+
+  # ── SonarQube Code Quality ───────────────────────────
+  sonarqube:
+    image: sonarqube:lts-community
+    container_name: quickbite-sonarqube
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+      - SONAR_JDBC_URL=jdbc:postgresql://sonar-db:5432/sonar
+      - SONAR_JDBC_USERNAME=sonar
+      - SONAR_JDBC_PASSWORD=sonar
+    depends_on:
+      - sonar-db
+    networks:
+      - quickbite-net
+    volumes:
+      - sonarqube-data:/opt/sonarqube/data
+      - sonarqube-logs:/opt/sonarqube/logs
+      - sonarqube-extensions:/opt/sonarqube/extensions
+
+  # ── SonarQube DB (PostgreSQL) ────────────────────────
+  sonar-db:
+    image: postgres:15-alpine
+    container_name: quickbite-sonar-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=sonar
+      - POSTGRES_DB=sonar
+    networks:
+      - quickbite-net
+    volumes:
+      - sonar-db-data:/var/lib/postgresql/data
+
+# ── Volumes ──────────────────────────────────────────────
+volumes:
+  mysql-data:
+    driver: local
+  redis-data:
+    driver: local
+  sonarqube-data:
+    driver: local
+  sonarqube-logs:
+    driver: local
+  sonarqube-extensions:
+    driver: local
+  sonar-db-data:
+    driver: local
+
+# ── Network ──────────────────────────────────────────────
+networks:
+  quickbite-net:
+    driver: bridge
