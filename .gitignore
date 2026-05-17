@@ -1,0 +1,51 @@
+# ═══════════════════════════════════════════════════════
+# QuickBite Backend — .gitignore
+# ═══════════════════════════════════════════════════════
+
+# ── Build Output ──────────────────────────────────────
+**/target/
+**/build/
+**/*.jar
+**/*.war
+**/*.class
+
+# ── IDE Files ─────────────────────────────────────────
+**/.idea/
+**/*.iml
+**/.vscode/
+**/.settings/
+**/.classpath
+**/.project
+**/.factorypath
+/.metadata/
+
+# ── Maven Wrapper ─────────────────────────────────────
+**/.mvn/wrapper/maven-wrapper.jar
+
+# ── OS Files ──────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs ──────────────────────────────────────────────
+**/logs/
+**/*.log
+
+# ── Runtime Data ──────────────────────────────────────
+**/hs_err_pid*
+**/*.hprof
+
+# ── Environment / Secrets ─────────────────────────────
+.env
+*.env.local
+
+# ── Archives ──────────────────────────────────────────
+**/*.zip
+**/*.tar.gz
+
+# ── Docker volumes ────────────────────────────────────
+mysql-data/
+redis-data/
+
+# ── Spring Boot DevTools ──────────────────────────────
+**/.spring-boot-devtools.properties
