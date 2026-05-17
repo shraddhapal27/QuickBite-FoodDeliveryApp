@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- ── Property Defaults ──────────────────────────────────────────── -->
+    <property name="LOG_DIR" value="logs"/>
+    <springProperty name="APP_NAME" source="spring.application.name" defaultValue="quickbite-service"/>
+
+    <!-- ── Console Appender (colored output) ──────────────────────────── -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) [%blue(${APP_NAME})] [%thread] %cyan(%logger{36}) — %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ── Rolling File Appender (daily rotation, max 30 days) ─────── -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/${APP_NAME}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/${APP_NAME}.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>500MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [${APP_NAME}] [%thread] %logger{36} — %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ── Error-Only File (for quick diagnosis) ──────────────────────── -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/${APP_NAME}-error.log</file>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/${APP_NAME}-error.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [${APP_NAME}] [%thread] %logger{36} — %msg%n%ex</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ── Logger Levels ──────────────────────────────────────────────── -->
+    <!-- QuickBite application code → DEBUG -->
+    <logger name="com.quickbite" level="DEBUG"/>
+
+    <!-- Spring framework → WARN (quieter) -->
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.springframework.web" level="INFO"/>
+
+    <!-- Hibernate → WARN (suppress noisy SQL logs) -->
+    <logger name="org.hibernate" level="WARN"/>
+
+    <!-- Eureka client → WARN -->
+    <logger name="com.netflix" level="WARN"/>
+
+    <!-- ── Root Logger ────────────────────────────────────────────────── -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="ERROR_FILE"/>
+    </root>
+
+</configuration>
