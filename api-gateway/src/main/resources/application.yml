@@ -1,0 +1,115 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: API-GATEWAY
+  main:
+    web-application-type: reactive
+  cloud:
+    gateway:
+      # Global CORS handled by CorsConfig bean — no duplicate needed here
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      routes:
+
+        # ── Auth Service ─────────────────────────────────────────────────────
+        # Frontend calls: /api/auth/**  → backend expects: /auth/**
+        - id: auth-service
+          uri: lb://AUTH-SERVICE
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=1   # strips /api → /auth/**
+
+        # ── Restaurant Service ───────────────────────────────────────────────
+        # Frontend calls: /api/restaurants/** → backend expects: /restaurants/**
+        - id: restaurant-service
+          uri: lb://RESTAURANT-SERVICE
+          predicates:
+            - Path=/api/restaurants/**
+          filters:
+            - StripPrefix=1
+
+        # ── Menu Service ─────────────────────────────────────────────────────
+        # Frontend calls: /api/menu/** → backend expects: /menu/**
+        - id: menu-service
+          uri: lb://MENU-SERVICE
+          predicates:
+            - Path=/api/menu/**
+          filters:
+            - StripPrefix=1
+
+        # ── Cart Service ─────────────────────────────────────────────────────
+        # Frontend calls: /api/cart/** → backend expects: /cart/**
+        - id: cart-service
+          uri: lb://CART-SERVICE
+          predicates:
+            - Path=/api/cart/**
+          filters:
+            - StripPrefix=1
+
+        # ── Order Service ────────────────────────────────────────────────────
+        # Frontend calls: /api/orders/** → backend expects: /orders/**
+        - id: order-service
+          uri: lb://ORDER-SERVICE
+          predicates:
+            - Path=/api/orders/**
+          filters:
+            - StripPrefix=1
+
+        # ── Payment Service ──────────────────────────────────────────────────
+        # Frontend calls: /api/payments/** and /api/wallet/**
+        # Backend PaymentResource has NO @RequestMapping class-level prefix,
+        # individual methods are mapped to /payments/** and /wallet/**
+        - id: payment-service-payments
+          uri: lb://PAYMENT-SERVICE
+          predicates:
+            - Path=/api/payments/**
+          filters:
+            - StripPrefix=1
+
+        - id: payment-service-wallet
+          uri: lb://PAYMENT-SERVICE
+          predicates:
+            - Path=/api/wallet/**
+          filters:
+            - StripPrefix=1
+
+        # ── Delivery Service ─────────────────────────────────────────────────
+        # Frontend calls: /api/agents/** → backend expects: /agents/**
+        - id: delivery-service
+          uri: lb://DELIVERY-SERVICE
+          predicates:
+            - Path=/api/agents/**
+          filters:
+            - StripPrefix=1
+
+        # ── Review Service ───────────────────────────────────────────────────
+        # Frontend calls: /api/reviews/** → backend expects: /reviews/**
+        - id: review-service
+          uri: lb://REVIEW-SERVICE
+          predicates:
+            - Path=/api/reviews/**
+          filters:
+            - StripPrefix=1
+
+        # ── Notification Service ─────────────────────────────────────────────
+        # Frontend calls: /api/notifications/** → backend expects: /notifications/**
+        - id: notification-service
+          uri: lb://NOTIFICATION-SERVICE
+          predicates:
+            - Path=/api/notifications/**
+          filters:
+            - StripPrefix=1
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
